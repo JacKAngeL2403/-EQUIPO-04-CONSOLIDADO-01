@@ -8,6 +8,7 @@ No sabe nada de consola ni de archivos: solo reglas del juego.
 from __future__ import annotations
 
 import random
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -272,16 +273,22 @@ class Character(ABC):
     """Clase base abstracta: héroes y enemigos comparten combate básico."""
 
     def __init__(self, name: str, max_hp: int, attack: int, defense: int, level: int = 1) -> None:
-        self._name = validate_name(name)
+        clean_name = name.strip()
+        
+        if not clean_name or len(clean_name) > 20:
+            raise InvalidNameError("El nombre debe tener entre 1 y 20 caracteres.")
         if max_hp <= 0:
             raise InvalidStatError("Los HP máximos deben ser mayores a 0.")
         if attack < 0 or defense < 0:
             raise InvalidStatError("Ataque y defensa no pueden ser negativos.")
+        
+        # Asignar directamente a las variables protegidas con guion bajo
+        self._name = clean_name
+        self._level = int(level)
         self._max_hp = int(max_hp)
         self._hp = int(max_hp)
         self._attack = int(attack)
         self._defense = int(defense)
-        self._level = int(level)
         self._guarding = False
 
     @property
@@ -308,11 +315,13 @@ class Character(ABC):
     @abstractmethod
     def attack_power(self) -> int:
         """Ataque total (base + equipo / furia)."""
+        pass
 
     @property
     @abstractmethod
     def defense_power(self) -> int:
         """Defensa total."""
+        pass
 
     def compute_damage(self, target: "Character", rng: random.Random) -> int:
         raw = self.attack_power + rng.randint(-2, 2)
@@ -343,7 +352,6 @@ class Character(ABC):
 
     def stop_guard(self) -> None:
         self._guarding = False
-
 
 class PartyMember(Character, ABC):
     """Miembro del grupo (héroe o compañero): tiene MP, XP, subida de nivel y

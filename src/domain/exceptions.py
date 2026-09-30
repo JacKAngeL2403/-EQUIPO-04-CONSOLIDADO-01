@@ -51,3 +51,4 @@ class PartyError(PixelQuestError):
 
 class PartyFullError(PartyError):
     """El grupo ya tiene el máximo de compañeros."""
+
